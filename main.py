@@ -1,94 +1,79 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Basic test case
-warehouse_map = [
-    ['S', '.', '.', '.', '.'],
-    ['X', 'X', '.', 'X', '.'],
-    ['.', 'P', 'P', '.', '.'],
-    ['.', 'X', '.', '.', 'D'],
-    ['.', '.', '.', 'X', '.']
-]
+class DijkstraPathfinder:
+    def __init__(self, grid):
+        self.grid = grid
+        self.rows = len(grid)
+        self.cols = len(grid[0])
+        self.directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        self.cost_map = {
+            '.': 1,
+            'P': 0.5,
+            'S': 0,
+            'D': 1
+        }
 
-# Movement directions: up, down, left, right
-directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    def get_cost(self, current, neighbor, direction):
+        r, c = neighbor
+        cell = self.grid[r][c]
+        move_cost = self.cost_map.get(cell, 1)
+        # Reduce cost if moving up or left
+        if direction in [(-1, 0), (0, -1)]:
+            move_cost = 0.5
+        return move_cost
 
-cost_map = {
-    '.': 1,
-    'P': 0.5,
-    'S': 0,
-    'D': 1
-}
-
-def start_end(grid):
-    start = end = None
-    for r in range(len(grid)):
-        for c in range(len(grid[0])):
-            if grid[r][c] == "S":
-                start = (r, c)
-            elif grid[r][c] == "D":
-                end = (r, c)
-    return start, end
-
-
-def dijkstra(grid):
-    rows, cols = len(grid), len(grid[0])
-    start, end = start_end(grid)
-    if not start or not end:
-        return None, float('inf')
-
-    unvisted = set((r, c) for r in range(rows) for c in range(cols) if grid[r][c] != 'X')
-    costs = {pos: float('inf') for pos in unvisted}
-    parents = {}
-    costs[start] = 0
-
-    while unvisted:
-        current = min(unvisted, key=lambda pos: costs[pos])
-        if current == end:
-            break
-
-        unvisted.remove(current)
-        r, c = current
-
-        for dr, dc in directions:
+    def get_neighbors(self, r, c):
+        for dr, dc in self.directions:
             nr, nc = r + dr, c + dc
-            neighbor = (nr, nc)
-            if 0 <= nr < rows and 0 <= nc < cols and neighbor in unvisted:
-                cell = grid[nr][nc]
-                move_cost = cost_map.get(cell, 1)
+            if 0 <= nr < self.rows and 0 <= nc < self.cols and self.grid[nr][nc] != 'X':
+                yield (nr, nc), (dr, dc)
 
-                if (dr, dc) == (-1, 0) or (dr, dc) == (0, -1):  # Up or Left directions
-                    move_cost = 0.5
+    def dijkstra(self, start, destination):
+        unvisited = set((r, c) for r in range(self.rows) for c in range(self.cols) if self.grid[r][c] != 'X')
+        costs = {pos: float('inf') for pos in unvisited}
+        parents = {}
+        costs[start] = 0
 
-                new_cost = costs[current] + move_cost
+        while unvisited:
+            current = min(unvisited, key=lambda pos: costs[pos])
+            if current == destination:
+                break
+
+            unvisited.remove(current)
+            r, c = current
+
+            for neighbor, direction in self.get_neighbors(r, c):
+                if neighbor not in unvisited:
+                    continue
+                new_cost = costs[current] + self.get_cost(current, neighbor, direction)
                 if new_cost < costs[neighbor]:
                     costs[neighbor] = new_cost
                     parents[neighbor] = current
 
-    path = []
-    cur = end
+        path = []
+        cur = destination
+        while cur in parents:
+            path.append(cur)
+            cur = parents[cur]
+        if cur == start:
+            path.append(start)
+            path.reverse()
+            return costs[destination], path
+        else:
+            return float('inf'), []
 
-    while cur in parents:
-        path.append(cur)
-        cur = parents[cur]
-
-    if cur == start:
-        path.append(start)
-        path.reverse()
-        return path, costs[end]
-    else:
-        return None, float('inf')
-
+def find_start_end(grid):
+    start = end = None
+    for r in range(len(grid)):
+        for c in range(len(grid[0])):
+            if grid[r][c] == 'S':
+                start = (r, c)
+            elif grid[r][c] == 'D':
+                end = (r, c)
+    return start, end
 
 def grid_path_visualization(grid, path):
-    cmap = {
-        'S': 'green',
-        'D': 'red',
-        'X': 'black',
-        '.': 'white',
-        'P': 'blue'
-    }
-
     plot_grid = np.zeros((len(grid), len(grid[0])))
 
     for r in range(len(grid)):
@@ -115,25 +100,32 @@ def grid_path_visualization(grid, path):
     for r in range(len(grid)):
         for c in range(len(grid[0])):
             cell = grid[r][c]
-            if cell == 'S':
-                ax.text(c, r, grid[r][c], ha='center', va='center', color='blue', fontsize=12) 
-            elif cell == 'D':
-                ax.text(c, r, grid[r][c], ha='center', va='center', color='blue', fontsize=12)  
+            if cell in ['S', 'D']:
+                ax.text(c, r, cell, ha='center', va='center', color='blue', fontsize=12)
             else:
-                ax.text(c, r, grid[r][c], ha='center', va='center', color='white', fontsize=12)
+                ax.text(c, r, cell, ha='center', va='center', color='white', fontsize=12)
 
     for (r, c) in path:
-        ax.add_patch(plt.Rectangle((c - 0.5, r - 0.5), 1, 1, color='green', alpha=0.5))
-        
+        ax.add_patch(plt.Rectangle((c - 0.5, r - 0.5), 1, 1, color='yellow', alpha=0.5))
+
     plt.show()
 
+# usage
+warehouse_map = [
+    ['S', '.', '.', '.', '.'],
+    ['X', 'X', '.', 'X', '.'],
+    ['.', 'P', 'P', '.', '.'],
+    ['.', 'X', '.', '.', 'D'],
+    ['.', '.', '.', 'X', '.']
+]
 
-path, total_cost = dijkstra(warehouse_map)
+start, end = find_start_end(warehouse_map)
+pathfinder = DijkstraPathfinder(warehouse_map)
+total_cost, path = pathfinder.dijkstra(start, end)
 
 if path:
     print("Path:", path)
-    print("Cost:", total_cost)
-
+    print("Total cost:", total_cost)
     grid_path_visualization(warehouse_map, path)
 else:
     print("No path found.")
