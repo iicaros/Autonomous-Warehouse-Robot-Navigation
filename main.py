@@ -1,4 +1,3 @@
-import heapq
 
 # Basic test case
 warehouse_map = [
@@ -36,3 +35,9 @@ def start_end(grid):
 start, end = start_end(warehouse_map)
 print("Start:", start)
 print("End:", end)
+
+def dijkstra(grid):
+    rows, cols = len(grid), len(grid[0])
+    start, end = start_end(grid)
+    if not start or not end:
+        return None, float('inf')
