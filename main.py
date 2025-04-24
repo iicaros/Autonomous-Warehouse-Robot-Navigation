@@ -41,3 +41,12 @@ def dijkstra(grid):
     start, end = start_end(grid)
     if not start or not end:
         return None, float('inf')
+
+    unvisted = set((r,c) for r in range(rows) for c in range(cols) if grid[r][c] != 'X')
+    costs = {pos: float('inf') for pos in unvisted}
+    parents = {}
+    costs[start] = 0
+
+    while unvisted:
+        current = min(unvisted, key=lambda pos: costs[pos])         #key lambda returns the cost of a position using the costs dictionary we defined earlier. Using min(key lambda) we get the lowest cost neighbor 
+        
