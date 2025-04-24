@@ -106,9 +106,23 @@ def grid_path_visualization(grid, path):
                 ax.text(c, r, cell, ha='center', va='center', color='white', fontsize=12)
 
     for (r, c) in path:
-        ax.add_patch(plt.Rectangle((c - 0.5, r - 0.5), 1, 1, color='yellow', alpha=0.5))
+        ax.add_patch(plt.Rectangle((c - 0.5, r - 0.5), 1, 1, color='green', alpha=0.5))
 
     plt.show()
+
+def print_grid_with_path(grid, path):
+    # grid copy to append path
+    grid_with_path = [row.copy() for row in grid]
+
+    for (r, c) in path:
+        if grid_with_path[r][c] not in ('S', 'D'):
+            grid_with_path[r][c] = '*'
+
+    print("Grid with Path:")
+    for row in grid_with_path:
+        print(' '.join(row))
+    print()
+
 
 # usage
 warehouse_map = [
@@ -124,8 +138,15 @@ pathfinder = DijkstraPathfinder(warehouse_map)
 total_cost, path = pathfinder.dijkstra(start, end)
 
 if path:
+    print("Original Grid:")
+    for row in warehouse_map:
+        print(' '.join(row))
+    print()
+
     print("Path:", path)
-    print("Total cost:", total_cost)
+    print("Total cost:", total_cost, "\n")
+    print_grid_with_path(warehouse_map, path)
+
     grid_path_visualization(warehouse_map, path)
 else:
     print("No path found.")
