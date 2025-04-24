@@ -49,4 +49,40 @@ def dijkstra(grid):
 
     while unvisted:
         current = min(unvisted, key=lambda pos: costs[pos])         #key lambda returns the cost of a position using the costs dictionary we defined earlier. Using min(key lambda) we get the lowest cost neighbor 
-        
+
+        if current == end:
+            break
+    
+        unvisted.remove(current)
+        r,c = current
+
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            neighbor = (nr, nc)
+            if 0 <= nr < rows and 0 <= nc < cols and neighbor in unvisted:
+                cell = grid[nr][nc]
+                move_cost = cost_map.get(cell, 1)
+                new_cost = costs[current] + move_cost
+                if new_cost < costs[neighbor]:
+                    costs[neighbor] = new_cost
+                    parents[neighbor] = current
+
+    path = []
+    cur = end
+
+    while cur in parents:
+        path.append(cur)
+        cur = parents[cur]
+    
+    if cur == start:
+        path.append(start)
+        path.reverse()
+        return path, costs[end]
+    else:
+        return None, float('inf')
+    
+
+path, total_cost = dijkstra(warehouse_map)
+
+print("Path:", path)
+print("Cost:", total_cost)
