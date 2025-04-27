@@ -124,7 +124,7 @@ def print_grid_with_path(grid, path):
     print()
 
 
-# usage
+# usages
 warehouse_map = [
     ['S', '.', '.', '.', '.'],
     ['X', 'X', '.', 'X', '.'],
