@@ -31,19 +31,21 @@ class DijkstraPathfinder:
 
     def dijkstra(self, start, destination):
         unvisited = set((r, c) for r in range(self.rows) for c in range(self.cols) if self.grid[r][c] != 'X')
-        costs = {pos: float('inf') for pos in unvisited}
+        costs = {pos: float('inf') for pos in unvisited}                                                                 # Sets initial costs to infinity other than start
         parents = {}
         costs[start] = 0
 
-        while unvisited:
-            current = min(unvisited, key=lambda pos: costs[pos])
-            if current == destination:
+
+                                                                                                                        
+        while unvisited:                                                                                                 # Main loop
+            current = min(unvisited, key=lambda pos: costs[pos])                                                         # selects smallest cost
+            if current == destination:                                                                                   # exits loop on reaching destination
                 break
 
             unvisited.remove(current)
             r, c = current
 
-            for neighbor, direction in self.get_neighbors(r, c):
+            for neighbor, direction in self.get_neighbors(r, c):                                                         # checks neighbors weights
                 if neighbor not in unvisited:
                     continue
                 new_cost = costs[current] + self.get_cost(current, neighbor, direction)
@@ -51,20 +53,20 @@ class DijkstraPathfinder:
                     costs[neighbor] = new_cost
                     parents[neighbor] = current
 
-        path = []
+        path = []                                                                                                        # Reconstructs the path using parent pointers
         cur = destination
         while cur in parents:
             path.append(cur)
             cur = parents[cur]
-        if cur == start:
+        if cur == start:                                                                                                 # reverses the list
             path.append(start)
             path.reverse()
             return costs[destination], path
-        else:
-            return float('inf'), []
+        else:       
+            return float('inf'), []                                                                                      # no path
 
 
-def find_start_end(grid):
+def find_start_end(grid):                                                                                                # finds start and end
     start = end = None
     for r in range(len(grid)):
         for c in range(len(grid[0])):
